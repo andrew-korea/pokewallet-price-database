@@ -29,6 +29,15 @@
     .card .price { font-size: 15px; font-weight: bold; color: #2e7d32; }
     .card .price .source { font-weight: normal; font-size: 10px; color: #999; }
     .card .price.na { color: #aaa; font-weight: normal; font-size: 12px; }
+    .card.premium { background: linear-gradient(135deg, #fffdf5 0%, #fff6da 45%, #fdefc0 100%); border: 1px solid #e6c464; box-shadow: 0 4px 16px rgba(191,149,63,.28); }
+    .card.premium:hover { box-shadow: 0 12px 30px rgba(191,149,63,.4); }
+    .card.premium h3 { color: #5c4416; }
+    .card.premium .set { color: #9c7a34; }
+    .card.premium .price { color: #9a6b0c; text-shadow: 0 0 8px rgba(230,180,60,.35); }
+    .card.premium .price .source { color: #b08a3e; }
+    .card.premium .card-gloss { background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,241,199,.85) 50%, rgba(255,255,255,0) 60%); }
+    .card-shimmer { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; background: linear-gradient(115deg, transparent 35%, rgba(255,241,199,.85) 50%, transparent 65%); background-size: 250% 250%; background-position: 200% 0; animation: premium-shimmer 3.4s ease-in-out infinite; mix-blend-mode: overlay; }
+    @keyframes premium-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -100% 0; } }
     #status { text-align: center; color: #888; margin: 30px 0 8px; font-size: 14px; }
     #progress-track { width: 100%; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; margin: 0 0 16px; display: none; }
     #progress-fill { height: 100%; width: 0%; background: #1a73e8; transition: width 0.2s ease; }
@@ -415,8 +424,9 @@
       slice.slice(renderedCount).forEach(card => {
         const info = card.card_info;
         const price = getPrice(card);
+        const isPremium = price && price.value > 1000;
         const div = document.createElement('div');
-        div.className = 'card';
+        div.className = 'card' + (isPremium ? ' premium' : '');
         div.innerHTML = `
           <img src="/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" onerror="pokewalletImgFallback(this)" />
           <h3>${info.clean_name || info.name}${info.card_number ? ', #' + info.card_number : ''}</h3>
@@ -424,7 +434,8 @@
           <div class="price ${price ? '' : 'na'}">
             ${price ? '$' + price.value.toFixed(2) + ' <span class="source">' + price.source + '</span>' : 'No price data'}
           </div>
-          <div class="card-gloss"></div>`;
+          <div class="card-gloss"></div>
+          ${isPremium ? '<div class="card-shimmer"></div>' : ''}`;
         div.addEventListener('click', () => openModal(card));
         attachTilt(div, div.querySelector('.card-gloss'));
         grid.appendChild(div);
