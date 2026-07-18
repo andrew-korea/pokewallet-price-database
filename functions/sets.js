@@ -24,3 +24,4 @@ export async function onRequestGet({ env }) {
 
   return Response.json(data, { status: res.status, headers: CORS_HEADERS })
 }
+// secret-persistence verification 2026-07-18T13:59:25Z
