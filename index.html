@@ -45,7 +45,7 @@
   <div class="grid" id="grid"></div>
   <div class="pagination" id="pagination"></div>
   <footer style="text-align:center; margin-top:32px; font-size:12px; color:#999;">
-    Hosted on <a href="https://www.netlify.com" target="_blank" rel="noopener">Netlify</a>
+    Hosted on <a href="https://www.cloudflare.com" target="_blank" rel="noopener">Cloudflare</a>
   </footer>
 
   <script>
@@ -112,7 +112,7 @@
         return;
       }
       document.getElementById('status').textContent = 'Loading sets...';
-      const res = await fetch('/.netlify/functions/sets');
+      const res = await fetch('/sets');
       const data = await res.json();
       if (!res.ok) {
         document.getElementById('status').textContent = res.status === 429
@@ -194,7 +194,7 @@
       let hasMore = true;
 
       while (hasMore) {
-        const res = await fetch(`/.netlify/functions/set-cards?set=${encodeURIComponent(setCode)}&page=${page}`);
+        const res = await fetch(`/set-cards?set=${encodeURIComponent(setCode)}&page=${page}`);
         const data = await res.json();
         if (token !== loadToken) return;
 
@@ -227,7 +227,7 @@
       let hasMore = true;
 
       while (hasMore) {
-        const res = await fetch(`/.netlify/functions/search?q=${encodeURIComponent(term)}&page=${page}`);
+        const res = await fetch(`/search?q=${encodeURIComponent(term)}&page=${page}`);
         const data = await res.json();
         if (token !== loadToken) return;
 
@@ -313,7 +313,7 @@
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
-          <img src="/.netlify/functions/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" />
+          <img src="/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" />
           <h3>${info.clean_name || info.name}${info.card_number ? ', #' + info.card_number : ''}</h3>
           <div class="set">${info.set_name || ''}</div>
           <div class="price ${price ? '' : 'na'}">

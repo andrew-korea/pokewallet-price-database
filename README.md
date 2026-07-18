@@ -1,17 +1,17 @@
 # PokeWallet Price Database
 
-A Pokémon TCG card price lookup site, served via Netlify Functions and aggregating
-pricing from TCGPlayer and CardMarket.
+A Pokémon TCG card price lookup site, served via Cloudflare Pages Functions and
+aggregating pricing from TCGPlayer and CardMarket.
 
 ## Running locally
 
 ```
-npm install
-netlify dev
+npx wrangler pages dev .
 ```
 
-Requires a `POKEWALLET_API_KEY` environment variable set in your Netlify site
-(or a local `.env` file) to authenticate against the upstream pricing API.
+Requires a `POKEWALLET_API_KEY` environment variable and a `POKEWALLET_CACHE` KV
+namespace binding configured in your Cloudflare Pages project (or a local `.dev.vars`
+file for the API key) to authenticate against the upstream pricing API.
 
 ## License
 

@@ -1,0 +1,29 @@
+{
+  "name": "pokewallet-price-database",
+  "account_id": "c20ecd860a2da4491c17b7620ab5058a",
+  "compatibility_date": "2026-07-18",
+  "assets": {
+    "directory": "."
+  },
+  "kv_namespaces": [
+    {
+      "binding": "POKEWALLET_CACHE",
+      "id": "7612ab9c92e64c75b5f2bf15c296396f"
+    }
+  ],
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  }
+}
