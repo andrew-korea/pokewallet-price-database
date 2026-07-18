@@ -47,3 +47,4 @@ export async function onRequestGet({ request, env }) {
 
   return Response.json(data, { status: res.status, headers: CORS_HEADERS })
 }
+// trivial redeploy trigger to test secret persistence
