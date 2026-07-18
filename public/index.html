@@ -33,8 +33,21 @@
     #modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
     #modal-overlay.open { display: flex; animation: modal-fade .15s ease; }
     @keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
-    #modal { background: #fff; border-radius: 16px; max-width: 560px; width: 100%; display: flex; gap: 32px; padding: 40px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: modal-pop .18s cubic-bezier(.2,.8,.2,1); }
-    @keyframes modal-pop { from { opacity: 0; transform: scale(.96) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    #modal { background: #fff; border-radius: 16px; max-width: 560px; width: 100%; display: flex; gap: 32px; padding: 40px; position: relative; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: modal-drop .6s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes modal-drop {
+      0% { opacity: 0; transform: translateY(-160px) rotate(-8deg) scale(.92); }
+      50% { opacity: 1; transform: translateY(6px) rotate(2deg) scale(1.015); }
+      68% { transform: translateY(-8px) rotate(-1.2deg) scale(1); }
+      84% { transform: translateY(3px) rotate(.6deg) scale(1); }
+      100% { transform: translateY(0) rotate(0) scale(1); }
+    }
+    #modal-shine { position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%); transform: skewX(-18deg); opacity: 0; pointer-events: none; animation: modal-shine-sweep .9s ease-out .5s both; }
+    @keyframes modal-shine-sweep {
+      0% { left: -60%; opacity: 0; }
+      15% { opacity: 1; }
+      60% { opacity: 1; }
+      100% { left: 130%; opacity: 0; }
+    }
     #modal-close { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%; background: #f2f2f2; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; transition: background .15s ease, color .15s ease; }
     #modal-close:hover { background: #e5e5e5; color: #222; }
     #modal-img { flex: 0 0 42%; max-width: 42%; }
@@ -75,6 +88,7 @@
 
   <div id="modal-overlay">
     <div id="modal">
+      <div id="modal-shine"></div>
       <button id="modal-close" aria-label="Close">×</button>
       <div id="modal-img"><img id="modal-img-el" alt="" /></div>
       <div id="modal-info">
