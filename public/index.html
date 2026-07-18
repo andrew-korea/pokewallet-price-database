@@ -12,10 +12,13 @@
     select, input { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
     input { width: 240px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+    .card-wrap { animation: pkw-float 3.6s ease-in-out infinite; }
+    @keyframes pkw-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+    @media (prefers-reduced-motion: reduce) { .card-wrap { animation: none; } }
     .card { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; cursor: pointer; position: relative; overflow: hidden; transform-style: preserve-3d; will-change: transform; transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
     .card.tilting { transition: none; }
     .card:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.18); }
-    .card-gloss { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s ease; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.65) 0%, rgba(255,255,255,.15) 35%, rgba(255,255,255,0) 60%); mix-blend-mode: overlay; border-radius: 10px; }
+    .card-gloss { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s ease; background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.75) 50%, rgba(255,255,255,0) 60%); background-size: 250% 250%; background-position: 50% 50%; mix-blend-mode: overlay; border-radius: 10px; }
     .card:hover .card-gloss { opacity: 1; }
     .card img { width: 100%; border-radius: 6px; margin-bottom: 8px; background: #f0f0f0; min-height: 120px; pointer-events: none; }
     .card h3 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 4px; }
@@ -109,7 +112,7 @@
         const rotateX = (0.5 - py) * 2 * MAX_TILT_DEG;
         div.classList.add('tilting');
         div.style.transform = `perspective(700px) scale(1.04) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
-        gloss.style.background = `radial-gradient(circle at ${(px * 100).toFixed(1)}% ${(py * 100).toFixed(1)}%, rgba(255,255,255,.65) 0%, rgba(255,255,255,.15) 35%, rgba(255,255,255,0) 60%)`;
+        gloss.style.backgroundPosition = `${(px * 100).toFixed(1)}% ${(py * 100).toFixed(1)}%`;
       });
       div.addEventListener('mouseleave', () => {
         div.classList.remove('tilting');
@@ -398,7 +401,12 @@
           <div class="card-gloss"></div>`;
         div.addEventListener('click', () => openModal(card));
         attachTilt(div, div.querySelector('.card-gloss'));
-        grid.appendChild(div);
+        const wrap = document.createElement('div');
+        wrap.className = 'card-wrap';
+        wrap.style.animationDelay = `${(Math.random() * -4).toFixed(2)}s`;
+        wrap.style.animationDuration = `${(3 + Math.random() * 1.6).toFixed(2)}s`;
+        wrap.appendChild(div);
+        grid.appendChild(wrap);
       });
       renderedCount = slice.length;
 
