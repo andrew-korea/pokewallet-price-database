@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon Price Database</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #fff; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #333; }
+    .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
+    select, input { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+    input { width: 240px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+    .card { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+    .card img { width: 100%; border-radius: 6px; margin-bottom: 8px; background: #f0f0f0; min-height: 120px; }
+    .card h3 { font-size: 13px; color: #333; margin-bottom: 4px; }
+    .card .set { font-size: 11px; color: #888; margin-bottom: 6px; }
+    .card .price { font-size: 15px; font-weight: bold; color: #2e7d32; }
+    .card .price .source { font-weight: normal; font-size: 10px; color: #999; }
+    .card .price.na { color: #aaa; font-weight: normal; font-size: 12px; }
+    #status { text-align: center; color: #888; margin: 30px 0; font-size: 14px; }
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+    .pagination button { padding: 6px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 13px; }
+    .pagination button.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+  </style>
+</head>
+<body>
+  <h1>Pokémon Price Database</h1>
+  <div class="filters">
+    <select id="setFilter"><option value="">All Sets</option></select>
+    <input type="text" id="search" placeholder="Search card name..." />
+    <select id="market">
+      <option value="tcgplayer">US (TCGPlayer)</option>
+      <option value="cardmarket">EU (Cardmarket)</option>
+    </select>
+    <select id="sort">
+      <option value="">Sort by Price</option>
+      <option value="high">Price: High to Low</option>
+      <option value="low">Price: Low to High</option>
+    </select>
+  </div>
+  <div id="status">Loading sets...</div>
+  <div class="grid" id="grid"></div>
+  <div class="pagination" id="pagination"></div>
+  <footer style="text-align:center; margin-top:32px; font-size:12px; color:#999;">
+    Hosted on <a href="https://www.netlify.com" target="_blank" rel="noopener">Netlify</a>
+  </footer>
+
+  <script>
+    const PAGE_SIZE = 24;
+
+    let allCards = [];
+    let filtered = [];
+    let currentPage = 1;
+    let loadToken = 0;
+    let renderedPage = null;
+    let renderedCount = 0;
+
+    const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+
+    function parseReleaseDate(str) {
+      if (!str) return 0;
+      // release_date looks like "31st August, 2007" - parse it explicitly
+      // rather than relying on the browser's loose Date.parse fallback,
+      // which isn't guaranteed to handle this non-standard format consistently.
+      const m = str.match(/(\d+)\w*\s+([A-Za-z]+),?\s+(\d{4})/);
+      if (!m) return 0;
+      const day = parseInt(m[1], 10);
+      const month = MONTHS[m[2].slice(0, 3).toLowerCase()];
+      const year = parseInt(m[3], 10);
+      if (month === undefined || isNaN(day) || isNaN(year)) return 0;
+      return new Date(year, month, day).getTime();
+    }
+
+    const SETS_CACHE_KEY = 'pkw_sets_v1';
+    const SETS_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days - sets rarely change
+
+    function loadSetsCache() {
+      try {
+        const raw = localStorage.getItem(SETS_CACHE_KEY);
+        if (!raw) return null;
+        const p = JSON.parse(raw);
+        if (Date.now() - p.t > SETS_CACHE_TTL) { localStorage.removeItem(SETS_CACHE_KEY); return null; }
+        return p.d;
+      } catch (e) { return null; }
+    }
+
+    function saveSetsCache(sets) {
+      try { localStorage.setItem(SETS_CACHE_KEY, JSON.stringify({ t: Date.now(), d: sets })); } catch (e) {}
+    }
+
+    function populateSets(sets) {
+      const sel = document.getElementById('setFilter');
+      sets
+        .slice()
+        .sort((a, b) => parseReleaseDate(b.release_date) - parseReleaseDate(a.release_date))
+        .forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.set_code;
+          opt.textContent = s.name;
+          sel.appendChild(opt);
+        });
+      document.getElementById('status').textContent = 'Select a set to load cards, or search by name.';
+    }
+
+    async function loadSets() {
+      const cached = loadSetsCache();
+      if (cached) {
+        populateSets(cached);
+        return;
+      }
+      document.getElementById('status').textContent = 'Loading sets...';
+      const res = await fetch('/.netlify/functions/sets');
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('status').textContent = res.status === 429
+          ? 'Rate limit reached - please try again in a bit.'
+          : `Error loading sets (${data.error || res.status}).`;
+        return;
+      }
+      saveSetsCache(data.data);
+      populateSets(data.data);
+    }
+
+    function noResultsText() {
+      const setSel = document.getElementById('setFilter');
+      const setName = setSel.value ? setSel.options[setSel.selectedIndex].text : '';
+      const search = document.getElementById('search').value.trim();
+      if (search && setName) return `No "${search}" cards found in ${setName}.`;
+      if (search) return `No cards found matching "${search}".`;
+      if (setName) return `No cards found in ${setName}.`;
+      return 'No cards found.';
+    }
+
+    async function loadCards() {
+      const set = document.getElementById('setFilter').value;
+      const search = document.getElementById('search').value.trim();
+
+      const token = ++loadToken;
+      allCards = [];
+      filtered = [];
+      currentPage = 1;
+      renderedPage = null;
+      renderedCount = 0;
+      document.getElementById('grid').innerHTML = '';
+      document.getElementById('pagination').innerHTML = '';
+
+      if (!set && !search) {
+        document.getElementById('status').textContent = 'Select a set or search a card name to get started.';
+        return;
+      }
+
+      const setSel = document.getElementById('setFilter');
+      const setName = set ? setSel.options[setSel.selectedIndex].text : 'All Sets';
+
+      if (set && search) {
+        // /sets/:setCode never includes price data (a real API gap), but
+        // /search always does. Searching by name and filtering the results
+        // to this set's exact set_code gets both correct scoping AND real
+        // prices, with no extra requests over a normal name search.
+        document.getElementById('status').textContent = `Searching "${search}" in ${setName}...`;
+        await loadBySearch(search, set, token);
+      } else if (set) {
+        // Browsing a whole set with no name to search by has to use
+        // /sets/:setCode, which means no price data for now (see loadBySet).
+        document.getElementById('status').textContent = `Loading ${setName}...`;
+        await loadBySet(set, token);
+      } else {
+        document.getElementById('status').textContent = `Searching "${search}" in All Sets...`;
+        await loadBySearch(search, '', token);
+      }
+    }
+
+    function matchesName(card, term) {
+      const name = (card.card_info.clean_name || card.card_info.name || '').toLowerCase();
+      return name.includes(term.trim().toLowerCase());
+    }
+
+    function handleErrorResponse(res, data) {
+      document.getElementById('status').textContent = res.status === 429
+        ? 'Rate limit reached - please try again in a bit.'
+        : `Error loading cards (${data.error || res.status}).`;
+    }
+
+    // Browsing an entire set (no search term) uses the dedicated
+    // /sets/:setCode endpoint for a reliable card list - but pokewallet.io
+    // never includes price data on this endpoint (confirmed against the
+    // live API: empty prices arrays regardless of set), so cards here show
+    // "No price data" until that's resolved (e.g. via /prices/:setCode).
+    async function loadBySet(setCode, token) {
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const res = await fetch(`/.netlify/functions/set-cards?set=${encodeURIComponent(setCode)}&page=${page}`);
+        const data = await res.json();
+        if (token !== loadToken) return;
+
+        if (!res.ok) { handleErrorResponse(res, data); return; }
+
+        const results = (data.cards || []).filter(c => c && c.card_info && c.card_info.name);
+        allCards = allCards.concat(results);
+        applyFilters(false);
+
+        const rawTotal = data.pagination ? data.pagination.total : allCards.length;
+        document.getElementById('status').textContent = `Loaded ${allCards.length} of ${rawTotal} cards...`;
+
+        hasMore = data.pagination ? page < data.pagination.total_pages : false;
+        page++;
+      }
+
+      if (token === loadToken) {
+        document.getElementById('status').textContent = filtered.length ? `${filtered.length} cards found` : noResultsText();
+      }
+    }
+
+    // Searches pokewallet.io's broad full-text search, then filters by name
+    // client-side (see matchesName) since that search also matches
+    // set/product names, not just card names. When setCode is given, also
+    // requires an exact match on the card's own set_code field (reliable -
+    // unlike using a set code as query text, this just compares a real
+    // returned field) to scope results to one set while keeping real prices.
+    async function loadBySearch(term, setCode, token) {
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const res = await fetch(`/.netlify/functions/search?q=${encodeURIComponent(term)}&page=${page}`);
+        const data = await res.json();
+        if (token !== loadToken) return;
+
+        if (!res.ok) { handleErrorResponse(res, data); return; }
+
+        const results = (data.results || [])
+          .filter(c => c && c.card_info && c.card_info.name)
+          .filter(c => matchesName(c, term))
+          .filter(c => !setCode || c.card_info.set_code === setCode);
+        allCards = allCards.concat(results);
+        applyFilters(false);
+
+        const rawTotal = data.pagination ? data.pagination.total : allCards.length;
+        const scanned = data.pagination ? Math.min(page * data.pagination.limit, rawTotal) : allCards.length;
+        document.getElementById('status').textContent = `Found ${allCards.length} matching "${term}"${setCode ? ' in this set' : ''} (scanned ${scanned} of ${rawTotal})...`;
+
+        hasMore = data.pagination ? page < data.pagination.total_pages : false;
+        page++;
+      }
+
+      if (token === loadToken) {
+        document.getElementById('status').textContent = filtered.length ? `${filtered.length} cards found` : noResultsText();
+      }
+    }
+
+    function getPrice(card) {
+      // pokewallet.io sometimes defaults a price field to 0 instead of null
+      // when data is genuinely missing (confirmed: a card with every other
+      // Cardmarket field null still had trend:0) - treat non-positive values
+      // as unavailable rather than a real $0 price.
+      const market = document.getElementById('market').value;
+      if (market === 'tcgplayer') {
+        const tp = card.tcgplayer && card.tcgplayer.prices && card.tcgplayer.prices[0];
+        return (tp && tp.market_price > 0) ? { value: tp.market_price, source: 'TCGPlayer' } : null;
+      }
+      const cm = card.cardmarket && card.cardmarket.prices && card.cardmarket.prices[0];
+      return (cm && cm.trend > 0) ? { value: cm.trend, source: 'Cardmarket' } : null;
+    }
+
+    function applyFilters(resetPage = true) {
+      const sort = document.getElementById('sort').value;
+      filtered = [...allCards];
+
+      if (sort === 'high') filtered.sort((a, b) => (getPrice(b)?.value ?? -1) - (getPrice(a)?.value ?? -1));
+      else if (sort === 'low') filtered.sort((a, b) => {
+        const pa = getPrice(a), pb = getPrice(b);
+        if (!pa) return 1;
+        if (!pb) return -1;
+        return pa.value - pb.value;
+      });
+
+      if (resetPage) currentPage = 1;
+      render(resetPage || sort !== '');
+    }
+
+    function render(forceFresh) {
+      const grid = document.getElementById('grid');
+      const pag = document.getElementById('pagination');
+      const status = document.getElementById('status');
+
+      if (!filtered.length) {
+        grid.innerHTML = '';
+        pag.innerHTML = '';
+        renderedPage = null;
+        renderedCount = 0;
+        status.textContent = noResultsText();
+        return;
+      }
+
+      const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+      const slice = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+      const freshStart = forceFresh || renderedPage !== currentPage || renderedCount > slice.length;
+      if (freshStart) {
+        grid.innerHTML = '';
+        renderedPage = currentPage;
+        renderedCount = 0;
+      }
+
+      slice.slice(renderedCount).forEach(card => {
+        const info = card.card_info;
+        const price = getPrice(card);
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <img src="/.netlify/functions/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" />
+          <h3>${info.clean_name || info.name}${info.card_number ? ', #' + info.card_number : ''}</h3>
+          <div class="set">${info.set_name || ''}</div>
+          <div class="price ${price ? '' : 'na'}">
+            ${price ? '$' + price.value.toFixed(2) + ' <span class="source">' + price.source + '</span>' : 'No price data'}
+          </div>`;
+        grid.appendChild(div);
+      });
+      renderedCount = slice.length;
+
+      pag.innerHTML = '';
+      if (totalPages > 1) {
+        const prev = document.createElement('button');
+        prev.textContent = '← Prev';
+        prev.disabled = currentPage === 1;
+        prev.onclick = () => { currentPage--; render(); window.scrollTo(0, 0); };
+        pag.appendChild(prev);
+
+        for (let i = 1; i <= totalPages; i++) {
+          if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            if (i === currentPage) btn.classList.add('active');
+            btn.onclick = () => { currentPage = i; render(); window.scrollTo(0, 0); };
+            pag.appendChild(btn);
+          } else if (Math.abs(i - currentPage) === 3) {
+            const span = document.createElement('span');
+            span.textContent = '…';
+            span.style.padding = '6px 4px';
+            pag.appendChild(span);
+          }
+        }
+
+        const next = document.createElement('button');
+        next.textContent = 'Next →';
+        next.disabled = currentPage === totalPages;
+        next.onclick = () => { currentPage++; render(); window.scrollTo(0, 0); };
+        pag.appendChild(next);
+      }
+    }
+
+    document.getElementById('setFilter').addEventListener('change', loadCards);
+    document.getElementById('market').addEventListener('change', () => applyFilters());
+    document.getElementById('sort').addEventListener('change', () => applyFilters());
+    document.getElementById('search').addEventListener('keydown', e => { if (e.key === 'Enter') loadCards(); });
+
+    loadSets();
+  </script>
+</body>
+</html>
