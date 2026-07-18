@@ -18,7 +18,7 @@
     select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 34px; background-repeat: no-repeat; background-position: right 14px center;
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-    .card { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; cursor: pointer; position: relative; overflow: hidden; transform-style: preserve-3d; will-change: transform; transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
+    .card { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; cursor: pointer; position: relative; overflow: hidden; transform-style: preserve-3d; will-change: transform; transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
     .card.tilting { transition: none; }
     .card:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.18); }
     .card-gloss { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s ease; background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.75) 50%, rgba(255,255,255,0) 60%); background-size: 250% 250%; background-position: 50% 50%; mix-blend-mode: overlay; border-radius: 10px; }
@@ -26,16 +26,30 @@
     .card img { width: 100%; border-radius: 6px; margin-bottom: 8px; background: #f0f0f0; min-height: 120px; pointer-events: none; }
     .card h3 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 4px; }
     .card .set { font-size: 11px; color: #888; margin-bottom: 6px; }
-    .card .price { font-size: 15px; font-weight: bold; color: #2e7d32; }
+    .card .price { font-size: 15px; font-weight: bold; color: #2e7d32; margin-top: auto; padding-top: 8px; }
     .card .price .source { font-weight: normal; font-size: 10px; color: #999; }
     .card .price.na { color: #aaa; font-weight: normal; font-size: 12px; }
-    .card.premium { background: linear-gradient(135deg, #fffdf5 0%, #fff6da 45%, #fdefc0 100%); border: 1px solid #e6c464; box-shadow: 0 4px 16px rgba(191,149,63,.28); }
-    .card.premium:hover { box-shadow: 0 12px 30px rgba(191,149,63,.4); }
-    .card.premium h3 { color: #5c4416; }
-    .card.premium .set { color: #9c7a34; }
-    .card.premium .price { color: #9a6b0c; text-shadow: 0 0 8px rgba(230,180,60,.35); }
-    .card.premium .price .source { color: #b08a3e; }
-    .card.premium .card-gloss { background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,241,199,.85) 50%, rgba(255,255,255,0) 60%); }
+    .card.gold { background: linear-gradient(135deg, #fffdf5 0%, #fff6da 45%, #fdefc0 100%); border: 1px solid #e6c464; box-shadow: 0 4px 16px rgba(191,149,63,.28); }
+    .card.gold:hover { box-shadow: 0 12px 30px rgba(191,149,63,.4); }
+    .card.gold h3 { color: #5c4416; }
+    .card.gold .set { color: #9c7a34; }
+    .card.gold .price { color: #9a6b0c; text-shadow: 0 0 8px rgba(230,180,60,.35); }
+    .card.gold .price .source { color: #b08a3e; }
+    .card.gold .card-gloss { background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,241,199,.85) 50%, rgba(255,255,255,0) 60%); }
+    .card.silver { background: linear-gradient(135deg, #fbfbfc 0%, #eef0f2 45%, #e1e4e8 100%); border: 1px solid #c6ccd2; box-shadow: 0 4px 14px rgba(120,130,140,.22); }
+    .card.silver:hover { box-shadow: 0 10px 24px rgba(120,130,140,.3); }
+    .card.silver h3 { color: #3d4550; }
+    .card.silver .set { color: #7c8590; }
+    .card.silver .price { color: #5b6572; text-shadow: 0 0 6px rgba(150,160,170,.3); }
+    .card.silver .price .source { color: #8b95a0; }
+    .card.silver .card-gloss { background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(238,240,243,.85) 50%, rgba(255,255,255,0) 60%); }
+    .card.bronze { background: linear-gradient(135deg, #fdf6f0 0%, #f3e0cd 45%, #eccfae 100%); border: 1px solid #cf9a5f; box-shadow: 0 4px 14px rgba(180,120,60,.25); }
+    .card.bronze:hover { box-shadow: 0 10px 24px rgba(180,120,60,.33); }
+    .card.bronze h3 { color: #6b3f1a; }
+    .card.bronze .set { color: #a87a45; }
+    .card.bronze .price { color: #a8621f; text-shadow: 0 0 6px rgba(200,130,50,.3); }
+    .card.bronze .price .source { color: #bf8a52; }
+    .card.bronze .card-gloss { background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(240,210,180,.85) 50%, rgba(255,255,255,0) 60%); }
     .card-shimmer { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; background: linear-gradient(115deg, transparent 45%, rgba(255,241,199,.85) 50%, transparent 55%); background-size: 300% 100%; background-repeat: no-repeat; animation: premium-shimmer 3s linear infinite; mix-blend-mode: overlay; }
     @keyframes premium-shimmer { 0% { background-position: 0% 0; } 100% { background-position: 100% 0; } }
     #status { text-align: center; color: #888; margin: 30px 0 8px; font-size: 14px; }
@@ -381,6 +395,13 @@
       return (cm && cm.trend > 0) ? { value: cm.trend, source: 'Cardmarket' } : null;
     }
 
+    function priceTier(value) {
+      if (value >= 1000) return 'gold';
+      if (value >= 500) return 'silver';
+      if (value >= 100) return 'bronze';
+      return null;
+    }
+
     function applyFilters(resetPage = true) {
       const sort = document.getElementById('sort').value;
       filtered = [...allCards];
@@ -424,9 +445,9 @@
       slice.slice(renderedCount).forEach(card => {
         const info = card.card_info;
         const price = getPrice(card);
-        const isPremium = price && price.value >= 1000;
+        const tier = price ? priceTier(price.value) : null;
         const div = document.createElement('div');
-        div.className = 'card' + (isPremium ? ' premium' : '');
+        div.className = 'card' + (tier ? ' ' + tier : '');
         div.innerHTML = `
           <img src="/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" onerror="pokewalletImgFallback(this)" />
           <h3>${info.clean_name || info.name}${info.card_number ? ', #' + info.card_number : ''}</h3>
@@ -435,7 +456,7 @@
             ${price ? '$' + price.value.toFixed(2) + ' <span class="source">' + price.source + '</span>' : 'No price data'}
           </div>
           <div class="card-gloss"></div>
-          ${isPremium ? '<div class="card-shimmer"></div>' : ''}`;
+          ${tier === 'gold' ? '<div class="card-shimmer"></div>' : ''}`;
         div.addEventListener('click', () => openModal(card));
         attachTilt(div, div.querySelector('.card-gloss'));
         grid.appendChild(div);
