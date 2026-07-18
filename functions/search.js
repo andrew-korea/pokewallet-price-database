@@ -19,11 +19,24 @@ export async function onRequestGet({ request, env }) {
     return Response.json(cached.data, { headers: CACHE_HEADERS })
   }
 
-  const res = await fetch(
-    `${BASE}/search?q=${encodeURIComponent(term)}&page=${page}&limit=${LIMIT}`,
-    { headers: { 'X-API-Key': env.POKEWALLET_API_KEY || '' } },
-  )
+  const fetchUrl = `${BASE}/search?q=${encodeURIComponent(term)}&page=${page}&limit=${LIMIT}`
+  const apiKey = env.POKEWALLET_API_KEY || ''
+  console.log(JSON.stringify({
+    debug: 'search-request',
+    fetchUrl,
+    apiKeyLength: apiKey.length,
+    apiKeyPrefix: apiKey.slice(0, 7),
+  }))
+
+  const res = await fetch(fetchUrl, { headers: { 'X-API-Key': apiKey } })
   const data = await res.json()
+
+  console.log(JSON.stringify({
+    debug: 'search-response',
+    status: res.status,
+    ok: res.ok,
+    data,
+  }))
 
   if (res.ok) {
     await env.POKEWALLET_CACHE.put(cacheKey, JSON.stringify({ timestamp: Date.now(), data }), {
