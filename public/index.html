@@ -36,8 +36,8 @@
     .card.premium .price { color: #9a6b0c; text-shadow: 0 0 8px rgba(230,180,60,.35); }
     .card.premium .price .source { color: #b08a3e; }
     .card.premium .card-gloss { background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,241,199,.85) 50%, rgba(255,255,255,0) 60%); }
-    .card-shimmer { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; background: linear-gradient(115deg, transparent 35%, rgba(255,241,199,.85) 50%, transparent 65%); background-size: 250% 250%; background-position: 200% 0; animation: premium-shimmer 3.4s ease-in-out infinite; mix-blend-mode: overlay; }
-    @keyframes premium-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -100% 0; } }
+    .card-shimmer { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; background: linear-gradient(115deg, transparent 45%, rgba(255,241,199,.85) 50%, transparent 55%); background-size: 300% 100%; background-repeat: no-repeat; animation: premium-shimmer 3s linear infinite; mix-blend-mode: overlay; }
+    @keyframes premium-shimmer { 0% { background-position: 0% 0; } 100% { background-position: 100% 0; } }
     #status { text-align: center; color: #888; margin: 30px 0 8px; font-size: 14px; }
     #progress-track { width: 100%; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; margin: 0 0 16px; display: none; }
     #progress-fill { height: 100%; width: 0%; background: #1a73e8; transition: width 0.2s ease; }
@@ -424,7 +424,7 @@
       slice.slice(renderedCount).forEach(card => {
         const info = card.card_info;
         const price = getPrice(card);
-        const isPremium = price && price.value > 1000;
+        const isPremium = price && price.value >= 1000;
         const div = document.createElement('div');
         div.className = 'card' + (isPremium ? ' premium' : '');
         div.innerHTML = `
