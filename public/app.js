@@ -10,10 +10,49 @@
   var renderedPage = null, renderedCount = 0;
 
   var style = document.createElement('style');
-  style.textContent = '#pokewallet-db{font-family:sans-serif;background:#ffffff;padding:24px;border-radius:12px;max-width:1200px;margin:0 auto}#pkw-title{text-align:center;margin-bottom:20px;color:#333;font-size:24px}.pkw-filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;justify-content:center;align-items:center}.pkw-filters select,.pkw-filters input{padding:8px 12px;border-radius:6px;border:1px solid #ccc;font-size:14px;background:#fff;color:#333}.pkw-filters input{width:220px}#pkw-status{text-align:center;color:#888;margin:24px 0 8px;font-size:14px}#pkw-progress-track{width:100%;height:4px;background:#eee;border-radius:2px;overflow:hidden;margin:0 0 16px;display:none}#pkw-progress-fill{height:100%;width:0%;background:#1a73e8;transition:width 0.2s ease}#pkw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}.pkw-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:center;transition:transform 0.15s ease}.pkw-card:hover{transform:translateY(-2px)}.pkw-card img{width:100%;border-radius:6px;margin-bottom:8px;background:#f0f0f0;min-height:120px}.pkw-card h3{font-size:13px;color:#333;margin-bottom:4px}.pkw-set{font-size:11px;color:#888;margin-bottom:6px}.pkw-price{font-size:15px;font-weight:bold;color:#2e7d32}.pkw-price .pkw-source{font-weight:normal;font-size:10px;color:#999}.pkw-price.na{color:#aaa;font-weight:normal;font-size:12px}#pkw-pagination{display:flex;justify-content:center;gap:8px;margin-top:24px;flex-wrap:wrap}#pkw-pagination button{padding:6px 14px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:13px}#pkw-pagination button.active{background:#1a73e8;color:#fff;border-color:#1a73e8}#pkw-pagination button:disabled{opacity:.4;cursor:default}';
+  style.textContent = '#pokewallet-db{font-family:sans-serif;background:#ffffff;padding:24px;border-radius:12px;max-width:1200px;margin:0 auto}#pkw-title{text-align:center;margin-bottom:20px;color:#333;font-size:24px}.pkw-filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;justify-content:center;align-items:center}.pkw-filters select,.pkw-filters input{padding:8px 12px;border-radius:6px;border:1px solid #ccc;font-size:14px;background:#fff;color:#333}.pkw-filters input{width:220px}#pkw-status{text-align:center;color:#888;margin:24px 0 8px;font-size:14px}#pkw-progress-track{width:100%;height:4px;background:#eee;border-radius:2px;overflow:hidden;margin:0 0 16px;display:none}#pkw-progress-fill{height:100%;width:0%;background:#1a73e8;transition:width 0.2s ease}#pkw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}.pkw-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:center;transition:transform 0.15s ease;cursor:pointer}.pkw-card:hover{transform:translateY(-2px)}.pkw-card img{width:100%;border-radius:6px;margin-bottom:8px;background:#f0f0f0;min-height:120px}.pkw-card h3{font-size:13px;color:#333;margin-bottom:4px}.pkw-set{font-size:11px;color:#888;margin-bottom:6px}.pkw-price{font-size:15px;font-weight:bold;color:#2e7d32}.pkw-price .pkw-source{font-weight:normal;font-size:10px;color:#999}.pkw-price.na{color:#aaa;font-weight:normal;font-size:12px}#pkw-pagination{display:flex;justify-content:center;gap:8px;margin-top:24px;flex-wrap:wrap}#pkw-pagination button{padding:6px 14px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:13px}#pkw-pagination button.active{background:#1a73e8;color:#fff;border-color:#1a73e8}#pkw-pagination button:disabled{opacity:.4;cursor:default}#pkw-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}#pkw-modal-overlay.open{display:flex}#pkw-modal{background:#fff;border-radius:12px;max-width:520px;width:100%;display:flex;gap:20px;padding:24px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.3)}#pkw-modal-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:#888}#pkw-modal-close:hover{color:#333}#pkw-modal-img{flex:0 0 45%;max-width:45%}#pkw-modal-img img{width:100%;border-radius:8px;background:#f0f0f0;display:block}#pkw-modal-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;justify-content:center}#pkw-modal-info h2{font-size:18px;color:#333;margin:0}#pkw-modal-row{display:flex;flex-direction:column;gap:6px;font-size:14px;color:#555}#pkw-modal-row div strong{color:#333}#pkw-modal-price{font-size:20px;font-weight:bold;color:#2e7d32;margin-top:4px}#pkw-modal-price .pkw-source{font-weight:normal;font-size:12px;color:#999}@media (max-width:480px){#pkw-modal{flex-direction:column}#pkw-modal-img{max-width:100%}}';
   document.head.appendChild(style);
 
-  mount.innerHTML = '<h1 id="pkw-title">Pokémon Price Database</h1><div class="pkw-filters"><select id="pkw-setFilter"><option value="">All Sets</option></select><input type="text" id="pkw-search" placeholder="Search card name..." /><select id="pkw-market"><option value="tcgplayer">US (TCGPlayer)</option><option value="cardmarket">EU (Cardmarket)</option></select><select id="pkw-sort"><option value="">Sort by Price</option><option value="high">Price: High to Low</option><option value="low">Price: Low to High</option></select></div><div id="pkw-status">Loading sets...</div><div id="pkw-progress-track"><div id="pkw-progress-fill"></div></div><div id="pkw-grid"></div><div id="pkw-pagination"></div>';
+  mount.innerHTML = '<h1 id="pkw-title">Pokémon Price Database</h1><div class="pkw-filters"><select id="pkw-setFilter"><option value="">All Sets</option></select><input type="text" id="pkw-search" placeholder="Search card name..." /><select id="pkw-market"><option value="tcgplayer">US (TCGPlayer)</option><option value="cardmarket">EU (Cardmarket)</option></select><select id="pkw-sort"><option value="">Sort by Price</option><option value="high">Price: High to Low</option><option value="low">Price: Low to High</option></select></div><div id="pkw-status">Loading sets...</div><div id="pkw-progress-track"><div id="pkw-progress-fill"></div></div><div id="pkw-grid"></div><div id="pkw-pagination"></div><div id="pkw-modal-overlay"><div id="pkw-modal"><button id="pkw-modal-close" aria-label="Close">×</button><div id="pkw-modal-img"><img id="pkw-modal-img-el" alt="" /></div><div id="pkw-modal-info"><h2 id="pkw-modal-name"></h2><div id="pkw-modal-row"><div><strong>Set:</strong> <span id="pkw-modal-set"></span></div><div><strong>Card #:</strong> <span id="pkw-modal-number"></span></div><div><strong>Rarity:</strong> <span id="pkw-modal-rarity"></span></div></div><div id="pkw-modal-price"></div></div></div></div>';
+
+  function openModal(card) {
+    var info = card.card_info;
+    var price = getPrice(card);
+    document.getElementById('pkw-modal-img-el').src = BASE + '/image?id=' + encodeURIComponent(card.id);
+    document.getElementById('pkw-modal-img-el').onerror = function() {
+      this.onerror = null;
+      this.src = BASE + '/card-back.png';
+    };
+    document.getElementById('pkw-modal-img-el').alt = info.clean_name || info.name;
+    document.getElementById('pkw-modal-name').textContent = info.clean_name || info.name;
+    document.getElementById('pkw-modal-set').textContent = info.set_name || 'Unknown';
+    document.getElementById('pkw-modal-number').textContent = info.card_number || 'Unknown';
+    document.getElementById('pkw-modal-rarity').textContent = info.rarity || 'Unknown';
+    var priceEl = document.getElementById('pkw-modal-price');
+    priceEl.innerHTML = '';
+    if (price) {
+      priceEl.appendChild(document.createTextNode('$' + price.value.toFixed(2) + ' '));
+      var source = document.createElement('span');
+      source.className = 'pkw-source';
+      source.textContent = price.source;
+      priceEl.appendChild(source);
+    } else {
+      priceEl.textContent = 'No price data';
+    }
+    document.getElementById('pkw-modal-overlay').className = 'open';
+  }
+
+  function closeModal() {
+    document.getElementById('pkw-modal-overlay').className = '';
+  }
+
+  document.getElementById('pkw-modal-overlay').addEventListener('click', function(e) {
+    if (e.target.id === 'pkw-modal-overlay') closeModal();
+  });
+  document.getElementById('pkw-modal-close').addEventListener('click', closeModal);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
 
   var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 
@@ -322,6 +361,7 @@
       div.appendChild(h3);
       div.appendChild(setDiv);
       div.appendChild(priceDiv);
+      div.addEventListener('click', function() { openModal(card); });
       grid.appendChild(div);
       newDivs.push(div);
     });
