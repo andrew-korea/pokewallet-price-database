@@ -12,9 +12,6 @@
     select, input { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
     input { width: 240px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-    .card-wrap { animation: pkw-float 3.6s ease-in-out infinite; }
-    @keyframes pkw-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-    @media (prefers-reduced-motion: reduce) { .card-wrap { animation: none; } }
     .card { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; cursor: pointer; position: relative; overflow: hidden; transform-style: preserve-3d; will-change: transform; transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
     .card.tilting { transition: none; }
     .card:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.18); }
@@ -33,20 +30,27 @@
     .pagination button { padding: 6px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 13px; }
     .pagination button.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
-    #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
-    #modal-overlay.open { display: flex; }
-    #modal { background: #fff; border-radius: 12px; max-width: 560px; width: 100%; display: flex; gap: 28px; padding: 40px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
-    #modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: #888; }
-    #modal-close:hover { color: #333; }
-    #modal-img { flex: 0 0 45%; max-width: 45%; }
-    #modal-img img { width: 100%; border-radius: 8px; background: #f0f0f0; display: block; }
-    #modal-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
-    #modal-info h2 { font-size: 18px; color: #333; margin: 0; }
-    #modal-row { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #555; }
-    #modal-row div strong { color: #333; }
-    #modal-price { font-size: 20px; font-weight: bold; color: #2e7d32; margin-top: 4px; }
-    #modal-price .source { font-weight: normal; font-size: 12px; color: #999; }
-    @media (max-width: 480px) { #modal { flex-direction: column; } #modal-img { max-width: 100%; } }
+    #modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
+    #modal-overlay.open { display: flex; animation: modal-fade .15s ease; }
+    @keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+    #modal { background: #fff; border-radius: 16px; max-width: 560px; width: 100%; display: flex; gap: 32px; padding: 40px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: modal-pop .18s cubic-bezier(.2,.8,.2,1); }
+    @keyframes modal-pop { from { opacity: 0; transform: scale(.96) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    #modal-close { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%; background: #f2f2f2; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; transition: background .15s ease, color .15s ease; }
+    #modal-close:hover { background: #e5e5e5; color: #222; }
+    #modal-img { flex: 0 0 42%; max-width: 42%; }
+    #modal-img img { width: 100%; border-radius: 10px; background: #f6f6f6; display: block; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+    #modal-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+    #modal-name { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0; line-height: 1.3; }
+    #modal-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; padding: 16px 0; border-top: 1px solid #ececec; border-bottom: 1px solid #ececec; }
+    .modal-spec { display: flex; flex-direction: column; gap: 2px; }
+    .modal-spec-full { grid-column: 1 / -1; }
+    .modal-spec-label { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #999; font-weight: 600; }
+    .modal-spec-value { font-size: 14px; color: #222; font-weight: 500; }
+    #modal-price-box { display: flex; align-items: baseline; justify-content: space-between; background: #f4faf5; border-radius: 10px; padding: 14px 16px; }
+    #modal-price-label { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #5a8a63; font-weight: 600; }
+    #modal-price { font-size: 22px; font-weight: 700; color: #1e7d32; }
+    #modal-price .source { font-weight: 500; font-size: 11px; color: #7a9e80; margin-left: 6px; }
+    @media (max-width: 480px) { #modal { flex-direction: column; padding: 28px; } #modal-img { max-width: 100%; } #modal-specs { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -75,12 +79,15 @@
       <div id="modal-img"><img id="modal-img-el" alt="" /></div>
       <div id="modal-info">
         <h2 id="modal-name"></h2>
-        <div id="modal-row">
-          <div><strong>Set:</strong> <span id="modal-set"></span></div>
-          <div><strong>Card #:</strong> <span id="modal-number"></span></div>
-          <div><strong>Rarity:</strong> <span id="modal-rarity"></span></div>
+        <div id="modal-specs">
+          <div class="modal-spec"><span class="modal-spec-label">Set</span><span class="modal-spec-value" id="modal-set"></span></div>
+          <div class="modal-spec"><span class="modal-spec-label">Card #</span><span class="modal-spec-value" id="modal-number"></span></div>
+          <div class="modal-spec modal-spec-full"><span class="modal-spec-label">Rarity</span><span class="modal-spec-value" id="modal-rarity"></span></div>
         </div>
-        <div id="modal-price"></div>
+        <div id="modal-price-box">
+          <span id="modal-price-label">Market Price</span>
+          <div id="modal-price"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -401,12 +408,7 @@
           <div class="card-gloss"></div>`;
         div.addEventListener('click', () => openModal(card));
         attachTilt(div, div.querySelector('.card-gloss'));
-        const wrap = document.createElement('div');
-        wrap.className = 'card-wrap';
-        wrap.style.animationDelay = `${(Math.random() * -4).toFixed(2)}s`;
-        wrap.style.animationDuration = `${(3 + Math.random() * 1.6).toFixed(2)}s`;
-        wrap.appendChild(div);
-        grid.appendChild(wrap);
+        grid.appendChild(div);
       });
       renderedCount = slice.length;
 
