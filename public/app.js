@@ -10,10 +10,10 @@
   var renderedPage = null, renderedCount = 0;
 
   var style = document.createElement('style');
-  style.textContent = '#pokewallet-db{font-family:sans-serif;background:#ffffff;padding:24px;border-radius:12px;max-width:1200px;margin:0 auto}#pkw-title{text-align:center;margin-bottom:20px;color:#333;font-size:24px}.pkw-filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;justify-content:center;align-items:center}.pkw-filters select,.pkw-filters input{padding:8px 12px;border-radius:6px;border:1px solid #ccc;font-size:14px;background:#fff;color:#333}.pkw-filters input{width:220px}#pkw-status{text-align:center;color:#888;margin:24px 0;font-size:14px}#pkw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}.pkw-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:center;transition:transform 0.15s ease}.pkw-card:hover{transform:translateY(-2px)}.pkw-card img{width:100%;border-radius:6px;margin-bottom:8px;background:#f0f0f0;min-height:120px}.pkw-card h3{font-size:13px;color:#333;margin-bottom:4px}.pkw-set{font-size:11px;color:#888;margin-bottom:6px}.pkw-price{font-size:15px;font-weight:bold;color:#2e7d32}.pkw-price .pkw-source{font-weight:normal;font-size:10px;color:#999}.pkw-price.na{color:#aaa;font-weight:normal;font-size:12px}#pkw-pagination{display:flex;justify-content:center;gap:8px;margin-top:24px;flex-wrap:wrap}#pkw-pagination button{padding:6px 14px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:13px}#pkw-pagination button.active{background:#1a73e8;color:#fff;border-color:#1a73e8}#pkw-pagination button:disabled{opacity:.4;cursor:default}';
+  style.textContent = '#pokewallet-db{font-family:sans-serif;background:#ffffff;padding:24px;border-radius:12px;max-width:1200px;margin:0 auto}#pkw-title{text-align:center;margin-bottom:20px;color:#333;font-size:24px}.pkw-filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;justify-content:center;align-items:center}.pkw-filters select,.pkw-filters input{padding:8px 12px;border-radius:6px;border:1px solid #ccc;font-size:14px;background:#fff;color:#333}.pkw-filters input{width:220px}#pkw-status{text-align:center;color:#888;margin:24px 0 8px;font-size:14px}#pkw-progress-track{width:100%;height:4px;background:#eee;border-radius:2px;overflow:hidden;margin:0 0 16px;display:none}#pkw-progress-fill{height:100%;width:0%;background:#1a73e8;transition:width 0.2s ease}#pkw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}.pkw-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:center;transition:transform 0.15s ease}.pkw-card:hover{transform:translateY(-2px)}.pkw-card img{width:100%;border-radius:6px;margin-bottom:8px;background:#f0f0f0;min-height:120px}.pkw-card h3{font-size:13px;color:#333;margin-bottom:4px}.pkw-set{font-size:11px;color:#888;margin-bottom:6px}.pkw-price{font-size:15px;font-weight:bold;color:#2e7d32}.pkw-price .pkw-source{font-weight:normal;font-size:10px;color:#999}.pkw-price.na{color:#aaa;font-weight:normal;font-size:12px}#pkw-pagination{display:flex;justify-content:center;gap:8px;margin-top:24px;flex-wrap:wrap}#pkw-pagination button{padding:6px 14px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:13px}#pkw-pagination button.active{background:#1a73e8;color:#fff;border-color:#1a73e8}#pkw-pagination button:disabled{opacity:.4;cursor:default}';
   document.head.appendChild(style);
 
-  mount.innerHTML = '<h1 id="pkw-title">Pokémon Price Database</h1><div class="pkw-filters"><select id="pkw-setFilter"><option value="">All Sets</option></select><input type="text" id="pkw-search" placeholder="Search card name..." /><select id="pkw-market"><option value="tcgplayer">US (TCGPlayer)</option><option value="cardmarket">EU (Cardmarket)</option></select><select id="pkw-sort"><option value="">Sort by Price</option><option value="high">Price: High to Low</option><option value="low">Price: Low to High</option></select></div><div id="pkw-status">Loading sets...</div><div id="pkw-grid"></div><div id="pkw-pagination"></div>';
+  mount.innerHTML = '<h1 id="pkw-title">Pokémon Price Database</h1><div class="pkw-filters"><select id="pkw-setFilter"><option value="">All Sets</option></select><input type="text" id="pkw-search" placeholder="Search card name..." /><select id="pkw-market"><option value="tcgplayer">US (TCGPlayer)</option><option value="cardmarket">EU (Cardmarket)</option></select><select id="pkw-sort"><option value="">Sort by Price</option><option value="high">Price: High to Low</option><option value="low">Price: Low to High</option></select></div><div id="pkw-status">Loading sets...</div><div id="pkw-progress-track"><div id="pkw-progress-fill"></div></div><div id="pkw-grid"></div><div id="pkw-pagination"></div>';
 
   var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 
@@ -46,6 +46,16 @@
   }
 
   function setStatus(msg) { var el = document.getElementById('pkw-status'); if (el) el.textContent = msg; }
+  function showProgress(pct) {
+    var track = document.getElementById('pkw-progress-track');
+    var fill = document.getElementById('pkw-progress-fill');
+    if (track) track.style.display = 'block';
+    if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+  function hideProgress() {
+    var track = document.getElementById('pkw-progress-track');
+    if (track) track.style.display = 'none';
+  }
 
   function populateSets(sets) {
     var sel = document.getElementById('pkw-setFilter');
@@ -180,6 +190,7 @@
   // returned field) to scope results to one set while keeping real prices.
   function loadBySearch(term, setCode, token) {
     var page = 1;
+    showProgress(0);
 
     function go() {
       fetch(BASE + '/search?q=' + encodeURIComponent(term) + '&page=' + page)
@@ -188,7 +199,7 @@
         })
         .then(function(r) {
           if (token !== loadToken) return;
-          if (!r.res.ok) { handleErrorResponse(r.res, r.data); return; }
+          if (!r.res.ok) { hideProgress(); handleErrorResponse(r.res, r.data); return; }
 
           var results = (r.data.results || [])
             .filter(function(c) { return c && c.card_info && c.card_info.name; })
@@ -200,14 +211,16 @@
           var rawTotal = r.data.pagination ? r.data.pagination.total : allCards.length;
           var scanned = r.data.pagination ? Math.min(page * r.data.pagination.limit, rawTotal) : allCards.length;
           setStatus('Found ' + allCards.length + ' matching "' + term + '"' + (setCode ? ' in this set' : '') + ' (scanned ' + scanned + ' of ' + rawTotal + ')...');
+          showProgress(rawTotal ? (scanned / rawTotal * 100) : 100);
 
           var hasMore = r.data.pagination ? page < r.data.pagination.total_pages : false;
           if (hasMore) { page++; go(); }
           else if (token === loadToken) {
+            hideProgress();
             setStatus(filtered.length ? filtered.length + ' cards found' : noResultsText());
           }
         })
-        .catch(function() { if (token === loadToken) setStatus('Failed to load cards. Please try again.'); });
+        .catch(function() { if (token === loadToken) { hideProgress(); setStatus('Failed to load cards. Please try again.'); } });
     }
     go();
   }

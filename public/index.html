@@ -19,7 +19,9 @@
     .card .price { font-size: 15px; font-weight: bold; color: #2e7d32; }
     .card .price .source { font-weight: normal; font-size: 10px; color: #999; }
     .card .price.na { color: #aaa; font-weight: normal; font-size: 12px; }
-    #status { text-align: center; color: #888; margin: 30px 0; font-size: 14px; }
+    #status { text-align: center; color: #888; margin: 30px 0 8px; font-size: 14px; }
+    #progress-track { width: 100%; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; margin: 0 0 16px; display: none; }
+    #progress-fill { height: 100%; width: 0%; background: #1a73e8; transition: width 0.2s ease; }
     .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
     .pagination button { padding: 6px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 13px; }
     .pagination button.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
@@ -42,6 +44,7 @@
     </select>
   </div>
   <div id="status">Loading sets...</div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
   <div class="grid" id="grid"></div>
   <div class="pagination" id="pagination"></div>
 
@@ -58,6 +61,17 @@
     function pokewalletImgFallback(img) {
       img.onerror = null;
       img.src = '/card-back.png';
+    }
+
+    function showProgress(pct) {
+      const track = document.getElementById('progress-track');
+      const fill = document.getElementById('progress-fill');
+      if (track) track.style.display = 'block';
+      if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    }
+    function hideProgress() {
+      const track = document.getElementById('progress-track');
+      if (track) track.style.display = 'none';
     }
 
     const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
@@ -227,13 +241,14 @@
     async function loadBySearch(term, setCode, token) {
       let page = 1;
       let hasMore = true;
+      showProgress(0);
 
       while (hasMore) {
         const res = await fetch(`/search?q=${encodeURIComponent(term)}&page=${page}`);
         const data = await res.json();
         if (token !== loadToken) return;
 
-        if (!res.ok) { handleErrorResponse(res, data); return; }
+        if (!res.ok) { hideProgress(); handleErrorResponse(res, data); return; }
 
         const results = (data.results || [])
           .filter(c => c && c.card_info && c.card_info.name)
@@ -245,11 +260,13 @@
         const rawTotal = data.pagination ? data.pagination.total : allCards.length;
         const scanned = data.pagination ? Math.min(page * data.pagination.limit, rawTotal) : allCards.length;
         document.getElementById('status').textContent = `Found ${allCards.length} matching "${term}"${setCode ? ' in this set' : ''} (scanned ${scanned} of ${rawTotal})...`;
+        showProgress(rawTotal ? (scanned / rawTotal * 100) : 100);
 
         hasMore = data.pagination ? page < data.pagination.total_pages : false;
         page++;
       }
 
+      hideProgress();
       if (token === loadToken) {
         document.getElementById('status').textContent = filtered.length ? `${filtered.length} cards found` : noResultsText();
       }
