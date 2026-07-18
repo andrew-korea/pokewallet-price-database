@@ -282,6 +282,10 @@
       var img = document.createElement('img');
       img.src = BASE + '/image?id=' + encodeURIComponent(card.id);
       img.alt = info.clean_name || info.name;
+      img.onerror = function() {
+        this.onerror = null;
+        this.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280"><rect width="100%" height="100%" fill="#f0f0f0"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="#999" text-anchor="middle" dy=".3em">No Image</text></svg>');
+      };
       var h3 = document.createElement('h3');
       h3.textContent = (info.clean_name || info.name) + (info.card_number ? ', #' + info.card_number : '');
       var setDiv = document.createElement('div');

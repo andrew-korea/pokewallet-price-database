@@ -55,6 +55,11 @@
     let renderedPage = null;
     let renderedCount = 0;
 
+    function pokewalletImgFallback(img) {
+      img.onerror = null;
+      img.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280"><rect width="100%" height="100%" fill="#f0f0f0"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="#999" text-anchor="middle" dy=".3em">No Image</text></svg>');
+    }
+
     const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 
     function parseReleaseDate(str) {
@@ -310,7 +315,7 @@
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
-          <img src="/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" />
+          <img src="/image?id=${encodeURIComponent(card.id)}" alt="${info.clean_name || info.name}" loading="lazy" onerror="pokewalletImgFallback(this)" />
           <h3>${info.clean_name || info.name}${info.card_number ? ', #' + info.card_number : ''}</h3>
           <div class="set">${info.set_name || ''}</div>
           <div class="price ${price ? '' : 'na'}">
