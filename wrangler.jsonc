@@ -1,8 +1,12 @@
 {
   "name": "pokewallet-price-database",
   "account_id": "c20ecd860a2da4491c17b7620ab5058a",
-  "pages_build_output_dir": ".",
+  "main": "src/index.js",
   "compatibility_date": "2026-07-18",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
   "kv_namespaces": [
     {
       "binding": "POKEWALLET_CACHE",
