@@ -208,13 +208,14 @@
     async function loadBySet(setCode, token) {
       let page = 1;
       let hasMore = true;
+      showProgress(0);
 
       while (hasMore) {
         const res = await fetch(`/set-cards?set=${encodeURIComponent(setCode)}&page=${page}`);
         const data = await res.json();
         if (token !== loadToken) return;
 
-        if (!res.ok) { handleErrorResponse(res, data); return; }
+        if (!res.ok) { hideProgress(); handleErrorResponse(res, data); return; }
 
         const results = (data.cards || []).filter(c => c && c.card_info && c.card_info.name);
         allCards = allCards.concat(results);
@@ -222,11 +223,13 @@
 
         const rawTotal = data.pagination ? data.pagination.total : allCards.length;
         document.getElementById('status').textContent = `Loaded ${allCards.length} of ${rawTotal} cards...`;
+        showProgress(rawTotal ? (allCards.length / rawTotal * 100) : 100);
 
         hasMore = data.pagination ? page < data.pagination.total_pages : false;
         page++;
       }
 
+      hideProgress();
       if (token === loadToken) {
         document.getElementById('status').textContent = filtered.length ? `${filtered.length} cards found` : noResultsText();
       }

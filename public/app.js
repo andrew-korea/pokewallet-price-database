@@ -153,6 +153,7 @@
   // "No price data" until that's resolved (e.g. via /prices/:setCode).
   function loadBySet(setCode, token) {
     var page = 1;
+    showProgress(0);
 
     function go() {
       fetch(BASE + '/set-cards?set=' + encodeURIComponent(setCode) + '&page=' + page)
@@ -161,7 +162,7 @@
         })
         .then(function(r) {
           if (token !== loadToken) return;
-          if (!r.res.ok) { handleErrorResponse(r.res, r.data); return; }
+          if (!r.res.ok) { hideProgress(); handleErrorResponse(r.res, r.data); return; }
 
           var results = (r.data.cards || [])
             .filter(function(c) { return c && c.card_info && c.card_info.name; });
@@ -170,14 +171,16 @@
 
           var rawTotal = r.data.pagination ? r.data.pagination.total : allCards.length;
           setStatus('Loaded ' + allCards.length + ' of ' + rawTotal + ' cards...');
+          showProgress(rawTotal ? (allCards.length / rawTotal * 100) : 100);
 
           var hasMore = r.data.pagination ? page < r.data.pagination.total_pages : false;
           if (hasMore) { page++; go(); }
           else if (token === loadToken) {
+            hideProgress();
             setStatus(filtered.length ? filtered.length + ' cards found' : noResultsText());
           }
         })
-        .catch(function() { if (token === loadToken) setStatus('Failed to load cards. Please try again.'); });
+        .catch(function() { if (token === loadToken) { hideProgress(); setStatus('Failed to load cards. Please try again.'); } });
     }
     go();
   }
