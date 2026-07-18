@@ -2,7 +2,7 @@
   var mount = document.getElementById('pokewallet-db');
   if (!mount) return;
 
-  var BASE = 'https://joyful-kleicha-9efd21.netlify.app';
+  var BASE = '';
   var PAGE_SIZE = 24;
 
   var allCards = [], filtered = [], currentPage = 1;
@@ -65,7 +65,7 @@
     var cached = loadSetsCache();
     if (cached) { populateSets(cached); return; }
     setStatus('Loading sets...');
-    fetch(BASE + '/.netlify/functions/sets')
+    fetch(BASE + '/sets')
       .then(function(res) {
         return res.json().then(function(data) { return { res: res, data: data }; });
       })
@@ -145,7 +145,7 @@
     var page = 1;
 
     function go() {
-      fetch(BASE + '/.netlify/functions/set-cards?set=' + encodeURIComponent(setCode) + '&page=' + page)
+      fetch(BASE + '/set-cards?set=' + encodeURIComponent(setCode) + '&page=' + page)
         .then(function(res) {
           return res.json().then(function(data) { return { res: res, data: data }; });
         })
@@ -182,7 +182,7 @@
     var page = 1;
 
     function go() {
-      fetch(BASE + '/.netlify/functions/search?q=' + encodeURIComponent(term) + '&page=' + page)
+      fetch(BASE + '/search?q=' + encodeURIComponent(term) + '&page=' + page)
         .then(function(res) {
           return res.json().then(function(data) { return { res: res, data: data }; });
         })
@@ -280,7 +280,7 @@
       div.style.opacity = '0';
       div.style.transition = 'opacity 0.15s ease';
       var img = document.createElement('img');
-      img.src = BASE + '/.netlify/functions/image?id=' + encodeURIComponent(card.id);
+      img.src = BASE + '/image?id=' + encodeURIComponent(card.id);
       img.alt = info.clean_name || info.name;
       var h3 = document.createElement('h3');
       h3.textContent = (info.clean_name || info.name) + (info.card_number ? ', #' + info.card_number : '');

@@ -1,16 +1,15 @@
 const BASE = 'https://api.pokewallet.io'
 
-export default async (req: Request) => {
-  const url = new URL(req.url)
+export async function onRequestGet({ request, env }) {
+  const url = new URL(request.url)
   const id = url.searchParams.get('id')
 
   if (!id) {
     return new Response('Missing id param', { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } })
   }
 
-  const apiKey = Netlify.env.get('POKEWALLET_API_KEY')
   const res = await fetch(`${BASE}/images/${encodeURIComponent(id)}`, {
-    headers: { 'X-API-Key': apiKey || '' },
+    headers: { 'X-API-Key': env.POKEWALLET_API_KEY || '' },
   })
 
   if (!res.ok) {
